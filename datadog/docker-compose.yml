@@ -1,0 +1,95 @@
+version: "3.8"
+
+volumes:
+  postgres_data: {} # Volume to persist PostgreSQL data
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: datadog-postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_db:/docker-entrypoint-initdb.d # Mount folder for initialization scripts
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=changeme
+    ports:
+      - "5432:5432"
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c track_activity_query_size=4096
+      -c pg_stat_statements.track=ALL
+      -c pg_stat_statements.max=10000
+      -c pg_stat_statements.track_utility=off
+      -c track_io_timing=on
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  datadog:
+    image: gcr.io/datadoghq/agent:latest
+    container_name: datadog-agent
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_APM_ENABLED=true
+      - DD_SITE=datadoghq.com # Use the site for your account
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=1 # Enable DogStatsD to receive metrics from other containers
+      - DD_ENV=development
+      - DD_SERVICE=flask-webapp
+      - DD_VERSION=1.0.0
+      # Database monitoring
+      - DD_DATABASE_MONITORING_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Monitor containers on the host
+      - /proc/:/host/proc/:ro # Monitor system metrics
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro # Monitor container metrics
+      - ./config/datadog/postgres.d/conf.yaml:/etc/datadog-agent/conf.d/postgres.d/conf.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8126:8126" # APM agent port
+      - "8125:8125/udp" # DogStatsD metrics port
+    healthcheck:
+      test: ["CMD", "agent", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  webapp:
+    build: .
+    container_name: datadog-webapp
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_HOST=datadog-postgres
+      - DB_NAME=postgres
+      - DB_USER=root
+      - DB_PASSWORD=changeme
+      - DB_PORT=5432
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_ENV=development
+      - DD_SERVICE=flask-webapp
+      - DD_VERSION=1.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      datadog:
+        condition: service_healthy
+    volumes:
+      - ./src:/app # Mount source code for development
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    driver: bridge 

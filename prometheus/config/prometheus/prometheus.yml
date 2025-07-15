@@ -1,0 +1,42 @@
+# Prometheus configuration file
+global:
+  scrape_interval: 15s  # By default, scrape targets every 15 seconds.
+  evaluation_interval: 15s  # By default, evaluate rules every 15 seconds.
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'prometheus-workshop'
+
+scrape_configs:
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape Node Exporter for system metrics
+  - job_name: 'node-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Scrape StatsD Exporter for statsd metrics
+  - job_name: 'statsd-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['statsd:9102']
+
+  # Scrape Flask webapp directly for Prometheus metrics
+  - job_name: 'webapp-prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['webapp:3001']
+    metrics_path: '/metrics'
+
+  # Scrape PostgreSQL Exporter for database metrics
+  - job_name: 'postgres-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['postgres-exporter:9187'] 
