@@ -36,11 +36,11 @@ services:
     environment:
       - DD_API_KEY=${DD_API_KEY}
       - DD_APM_ENABLED=true
-      - DD_SITE=datadoghq.com # Use the site for your account
+      - DD_SITE=${DD_SITE} # Use the site for your account
       - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=1 # Enable DogStatsD to receive metrics from other containers
-      - DD_ENV=development
-      - DD_SERVICE=flask-webapp
-      - DD_VERSION=1.0.0
+      - DD_ENV=${DD_ENV}
+      - DD_SERVICE=${DD_SERVICE}
+      - DD_VERSION=${DD_VERSION}
       # Database monitoring
       - DD_DATABASE_MONITORING_ENABLED=true
     volumes:
