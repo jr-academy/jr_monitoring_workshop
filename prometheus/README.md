@@ -342,7 +342,7 @@ This exercise teaches you to create Grafana dashboards for the same Golden Signa
 **IMPORTANT**: Before creating dashboards, you must connect Grafana to Prometheus.
 
 1. **Add Data Source**:
-   - In Grafana, click **"Configuration"** (gear icon) in left sidebar
+   - In Grafana, click **"Connections"** in left sidebar
    - Click **"Data sources"**
    - Click **"Add data source"**
    - Select **"Prometheus"**
@@ -363,19 +363,20 @@ This exercise teaches you to create Grafana dashboards for the same Golden Signa
 
 1. **Create New Dashboard**:
    - Click **"+"** in left sidebar → **"Dashboard"**
-   - Click **"Add visualization"**
+   - Click **"+ Create dashboard"**
+   - Click **"+ Add visualization"**
    - Select **"Prometheus"** as data source
 
 2. **Traffic Panel - Request Rate**:
-   - **Panel Title**: Change to "Request Rate (req/s)"
-   - **Query**: 
+   - **Panel Title**: Change to "Request Rate (req/s)" (Top right)
+   - **Query**: (Use Code mode)
      ```promql
      sum(rate(flask_http_request_duration_seconds_count[5m])) by (path)
      ```
    - **Legend**: `{{path}}`
-   - **Unit**: Set to "requests/sec" (under Standard Options → Unit)
+   - **Unit**: Set to "requests/sec" (under Standard Options → Unit in the right side bar)
    - **Visualization**: Time series (line chart)
-   - Click **Apply** to save panel
+   - Click **Back to dashboard** to see the added panel
 
 #### Part C: Latency Monitoring
 
@@ -386,19 +387,19 @@ This exercise teaches you to create Grafana dashboards for the same Golden Signa
      ```promql
      histogram_quantile(0.50, rate(flask_http_request_duration_seconds_bucket[5m]))
      ```
-   - **Legend A**: "p50"
+   - **Legend A**: "p50 - {{path}}"
    - **Query B** (click + Add query):
      ```promql
      histogram_quantile(0.95, rate(flask_http_request_duration_seconds_bucket[5m]))
      ```
-   - **Legend B**: "p95"
+   - **Legend B**: "p95 - {{path}}"
    - **Query C**:
      ```promql
      histogram_quantile(0.99, rate(flask_http_request_duration_seconds_bucket[5m]))
      ```
-   - **Legend C**: "p99"
+   - **Legend C**: "p99 - {{path}}"
    - **Unit**: Set to "seconds (s)"
-   - Click **Apply**
+   - Click **Back to dashboard** to see the added panel
 
 #### Part D: Error Rate Monitoring
 
@@ -412,23 +413,10 @@ This exercise teaches you to create Grafana dashboards for the same Golden Signa
    - **Unit**: "percent (0-100)"
    - **Visualization**: Stat (single number)
    - **Thresholds**: 
-     - Green: 0-1
-     - Yellow: 1-5  
-     - Red: 5+
-   - Click **Apply**
-
-#### Part E: Business Metrics
-
-5. **Add Business Operations Panel**:
-   - **Panel Title**: "Business Operations Rate"
-   - **Query**: 
-     ```promql
-     sum(rate(webapp_business_operations_total[5m])) by (operation_type)
-     ```
-   - **Legend**: `{{operation_type}}`
-   - **Unit**: "ops/sec"
-   - **Visualization**: Time series
-   - Click **Apply**
+     - Yellow: 1  
+     - Red: 5
+   - **Show Thresholds mode** As lines (dashed)
+   -Click **Back to dashboard** to see the added panel
 
 #### Part F: Resource Usage
 
@@ -446,7 +434,7 @@ This exercise teaches you to create Grafana dashboards for the same Golden Signa
    - **Legend B**: "Memory MB - {{id}}"
    - **Unit**: For mixed units, leave as "Short" or create separate panels
    - **Note**: This shows ALL Docker containers. Use Table view to see which container IDs correspond to which services.
-   - Click **Apply**
+   - Click **Back to dashboard** to see the added panel
 
 #### Part G: Dashboard Configuration
 
