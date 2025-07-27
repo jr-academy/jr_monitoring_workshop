@@ -38,9 +38,9 @@ services:
       - DD_APM_ENABLED=true
       - DD_SITE=${DD_SITE} # Use the site for your account
       - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=1 # Enable DogStatsD to receive metrics from other containers
-      - DD_ENV=${DD_ENV}
-      - DD_SERVICE=${DD_SERVICE}
-      - DD_VERSION=${DD_VERSION}
+      - DD_ENV=development
+      - DD_SERVICE=datadog-agent
+      - DD_VERSION=1.0.0
       # Database monitoring
       - DD_DATABASE_MONITORING_ENABLED=true
     volumes:
